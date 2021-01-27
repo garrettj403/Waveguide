@@ -4,7 +4,7 @@ import scipy.constants as sc
 
 
 def test_eta():
-    """Test intrinsic impedance of vacuum."""
+    """Test intrinsic impedance of vacuum against known value."""
 
     value = wg.intrinsic_impedance(1, 1)
     scipy_value = sc.physical_constants['characteristic impedance of vacuum'][0]
@@ -15,7 +15,7 @@ def test_example_3p1():
     """Test example 3.1 in Pozar."""
 
     # Dimensions
-    a, b = 1.07*sc.centi, 0.43*sc.centi
+    a, b = 1.07 * sc.centi, 0.43 * sc.centi
 
     # Teflon
     er_mag, tand, ur = 2.08, 0.0004, 1
@@ -30,7 +30,7 @@ def test_example_3p1():
     te01 = wg.cutoff_frequency(a, b, er_mag, 1, 0, 1)
     te11 = wg.cutoff_frequency(a, b, er_mag, 1, 1, 1)
     te21 = wg.cutoff_frequency(a, b, er_mag, 1, 2, 1)
-    assert te10 == pytest.approx( 9.72 * sc.giga, 0.01 * sc.giga)
+    assert te10 == pytest.approx(9.72 * sc.giga, 0.01 * sc.giga)
     assert te20 == pytest.approx(19.44 * sc.giga, 0.01 * sc.giga)
     assert te01 == pytest.approx(24.19 * sc.giga, 0.01 * sc.giga)
     assert te11 == pytest.approx(26.07 * sc.giga, 0.01 * sc.giga)

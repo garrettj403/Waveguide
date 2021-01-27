@@ -17,6 +17,8 @@ from scipy.constants import mu_0 as u0
 def propagation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     """Calculate propagation constant (complex value).
 
+    Typically represented by: gamma
+
     Args:
         f: frequency
         a: broad dimension of waveguide
@@ -28,23 +30,46 @@ def propagation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
         n: mode number n
 
     Returns:
-        np.ndarray: propagation constant
+        np.ndarray: propagation constant (complex value)
 
     """
 
     k = wavenumber(f, er, ur)
     kc = cutoff_wavenumber(a, b, m, n)
-
-    if cond is not None:
-        alpha_c = conductor_loss(f, cond, a, b, er=er, ur=ur)
-    else:
-        alpha_c = 0
+    alpha_c = conductor_loss(f, cond, a, b, er=er, ur=ur)
 
     return 1j * sqrt(k ** 2 - kc ** 2) + alpha_c
 
 
+def attenuation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
+    """Calculate attenuation constant (real component of propagation constant).
+
+    Includes conductor loss and dielectric loss.
+
+    Typically represented by: alpha
+
+    Args:
+        f: frequency
+        a: broad dimension of waveguide
+        b: narrow dimension of waveguide
+        er: relative permittivity
+        ur: relative permeability
+        cond: conductivity of waveguide walls
+        m: mode number m
+        n: mode number n
+
+    Returns:
+        np.ndarray: attenuation constant
+
+    """
+
+    return propagation_constant(f, a, b=b, er=er, ur=ur, cond=cond, m=m, n=n).real
+
+
 def phase_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
-    """Calculate phase constant (beta).
+    """Calculate phase constant (imaginary component of propagation constant).
+
+    Typically represented by: beta
 
     Args:
         f: frequency
@@ -65,7 +90,9 @@ def phase_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
 
 
 def wavelength(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
-    """Calculate wavelength.
+    """Calculate guided wavelength.
+
+    Typically represented by: lambda
 
     Args:
         f: frequency
@@ -87,29 +114,10 @@ def wavelength(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     return 2 * pi / beta
 
 
-def attenuation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
-    """Calculate phase constant (alpha).
-
-    Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
-        er: relative permittivity
-        ur: relative permeability
-        cond: conductivity of waveguide walls
-        m: mode number m
-        n: mode number n
-
-    Returns:
-        np.ndarray: attenuation constant
-
-    """
-
-    return propagation_constant(f, a, b=b, er=er, ur=ur, cond=cond, m=m, n=n).real
-
-
 def intrinsic_impedance(er=1, ur=1):
-    """Calculate intrinsic impedance of dielectric.
+    """Calculate intrinsic impedance of dielectric material (or vacuum).
+
+    Typically represented by: eta
 
     Args:
         er: relative permittivity
@@ -124,7 +132,9 @@ def intrinsic_impedance(er=1, ur=1):
 
 
 def wavenumber(f, er=1, ur=1):
-    """Calculate freespace wavenumber.
+    """Calculate freespace wavenumber of dielectric material (or vacuum).
+
+    Typically represented by: k
 
     Args:
         f: frequency
@@ -133,15 +143,14 @@ def wavenumber(f, er=1, ur=1):
 
     Returns:
         np.ndarray: freespace wavenumber
+
     """
 
-    w = 2 * pi * f
-
-    return w * sqrt(ur * u0 * er * e0)
+    return 2 * pi * f * sqrt(ur * u0 * er * e0)
 
 
 def cutoff_wavenumber(a, b=None, m=1, n=0):
-    """Calculate cutoff wavenumber of mode TE/TMmn.
+    """Calculate cutoff wavenumber of TEmn or TMmn waveguide mode.
 
     Args:
         a: broad dimension of waveguide
@@ -151,16 +160,18 @@ def cutoff_wavenumber(a, b=None, m=1, n=0):
 
     Returns:
         float: cutoff wavenumber
+
     """
 
+    # Assume standard dimensions if b is not provided
     if b is None:
         b = a / 2
 
-    return sqrt((m * pi / a)**2 + (n * pi / b)**2)
+    return sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2)
 
 
 def cutoff_frequency(a, b=None, er=1, ur=1, m=1, n=0):
-    """Calculate cutoff frequency of move TE/TMmn.
+    """Calculate cutoff frequency of TEmn or TMmn waveguide mode.
 
     Args:
         a: broad dimension of waveguide
@@ -181,6 +192,23 @@ def cutoff_frequency(a, b=None, er=1, ur=1, m=1, n=0):
 
 
 def impedance(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0, mode='TE'):
+    """Calculate characteristic impedance of TEmn or TMmn waveguide mode.
+
+    Args:
+        f: frequency
+        a: broad waveguide dimension
+        b: narrow waveguide dimension
+        er: relative permittivity
+        ur: relative permeability
+        cond: conductivity
+        m: waveguide mode m
+        n: waveguide mode n
+        mode: mode, either "TE" or "TM"
+
+    Returns:
+        np.ndarray: characteristic impedance
+
+    """
 
     k = wavenumber(f, er=er, ur=ur)
     eta = intrinsic_impedance(er=er, ur=ur)
@@ -192,7 +220,7 @@ def impedance(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0, mode='TE'):
         return beta * eta / k
     else:
         print("Mode must be either TE or TM")
-        raise
+        raise ValueError
 
 
 # WAVEGUIDE LOSS --------------------------------------------------------- ###
@@ -210,6 +238,7 @@ def dielectric_loss(f, a, b=None, er=1, ur=1, m=1, n=0):
         n: mode number n
 
     Returns:
+        np.ndarray: dielectric loss in Np/m
 
     """
 
@@ -233,6 +262,9 @@ def conductor_loss(f, cond, a, b, er=1, ur=1):
         np.ndarray: conductor loss in Np/m
 
     """
+
+    if cond == 0 or cond is None:
+        return np.zeros_like(f)
 
     # Propagation properties
     k = np.real(wavenumber(f, er=er, ur=ur))
@@ -259,9 +291,7 @@ def surface_resistance(f, cond, ur=1):
 
     """
 
-    w = 2 * pi * f
-
-    return np.sqrt(w * ur * u0 / 2 / cond)
+    return np.sqrt(2 * pi * f * ur * u0 / 2 / cond)
 
 
 def skin_depth(f, cond, ur=1):
