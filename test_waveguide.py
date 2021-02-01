@@ -1,7 +1,8 @@
 import pytest
+import numpy as np
 import waveguide as wg
 import scipy.constants as sc
-
+import matplotlib.pyplot as plt 
 
 def test_eta():
     """Test intrinsic impedance of vacuum against known value."""
@@ -87,3 +88,124 @@ def test_problem_3p5():
     assert total_loss == pytest.approx(0.446, 0.001)
     assert rs == pytest.approx(0.03195, 0.0001)
     assert phase == pytest.approx(2330.7, 0.2)
+
+
+def test_dielectric_loss():
+
+    # Dielectric properties
+    er_mag = 3
+    tand = 1e-2
+    er = er_mag * (1 - 1j * tand)
+
+    # Waveguide dimensions
+    a, b = 28 * sc.mil, 14 * sc.mil
+
+    # Waveguide mode
+    m, n = 1, 0
+
+    # Frequency sweep
+    f = np.linspace(260, 400, 141) * 1e9
+    w = 2 * np.pi * f
+
+    # From propagation constant
+    alphad1 = wg.dielectric_loss(f, a, b=b, er=er, ur=1, m=m, n=n)
+
+    # From Eqn. 3.29 in Pozar
+    k = wg.wavenumber(f, er=er.real, ur=1)
+    beta = wg.phase_constant(f, a, b=b, er=er, ur=1, m=m, n=n)
+    alphad2 = k ** 2 * tand / 2 / beta
+
+    # # Debug 
+    # plt.figure()
+    # plt.plot(f/1e9, alphad1, 'k')
+    # plt.plot(f/1e9, alphad2, 'r--')
+    # plt.xlabel("Frequency (GHz)")
+    # plt.ylabel("Attenuation Constant (Np/m)")
+    # plt.show()
+
+    # Compare
+    np.testing.assert_almost_equal(alphad1, alphad2, decimal=12)
+
+
+def test_conductor_loss():
+
+    # Waveguide conductivity [S/m]
+    cond = 1e7
+
+    # Waveguide dimensions
+    a, b = 28 * sc.mil, 14 * sc.mil
+
+    # Waveguide mode
+    m, n = 1, 0
+
+    # Frequency sweep
+    f = np.linspace(260, 400, 141) * 1e9
+    w = 2 * np.pi * f
+
+    # From Eqn. 3.96 in Pozar
+    alphac1 = wg.conductor_loss(f, cond, a, b, er=1, ur=1)
+
+    # From Maxwell 1947
+    k = wg.wavenumber(f, er=1, ur=1)
+    beta = wg.phase_constant(f, a, b=b, er=1, ur=1, m=m, n=n)
+    lambdac = 2 * a
+    lambda0 = sc.c / f
+    alphac2 = 1 / (2 * b) / \
+              np.sqrt(1 - (lambda0/lambdac)**2) * \
+              np.sqrt(4 * np.pi / lambda0 / sc.mu_0 / sc.c / cond) * \
+              (1 + 2 * b / a * (lambda0 / lambdac)**2)
+
+    # # Debug 
+    # plt.figure()
+    # plt.plot(f/1e9, alphac1, 'k')
+    # plt.plot(f/1e9, alphac2, 'r--')
+    # plt.xlabel("Frequency (GHz)")
+    # plt.ylabel("Attenuation Constant (Np/m)")
+    # plt.show()
+
+    # Compare
+    np.testing.assert_almost_equal(alphac1, alphac2, decimal=12)
+
+
+def test_effective_conductivity():
+
+    # Frequency sweep
+    f = np.linspace(260, 400, 141) * 1e9
+    w = 2 * np.pi * f
+
+    # Waveguide conductivity [S/m]
+    cond = 1e7 * np.ones_like(f)
+    cond += f * 1e-5
+
+    # Waveguide dimensions
+    a, b = 28 * sc.mil, 14 * sc.mil
+
+    # Waveguide mode
+    m, n = 1, 0
+
+    # From Eqn. 3.96 in Pozar
+    alphac = wg.conductor_loss(f, cond, a, b, er=1, ur=1)
+
+    # Recover conductivity
+    cond_eff = wg.effective_conductivity(f, alphac, a, b, er=1, ur=1)
+
+    # Debug
+    plt.figure()
+    plt.plot(f/1e9, cond * np.ones_like(f), 'k')
+    plt.plot(f/1e9, cond_eff, 'r--')
+    plt.xlabel("Frequency (GHz)")
+    plt.ylabel("Conductivity (S/m)")
+    plt.show()
+
+    # Compare
+    np.testing.assert_almost_equal(cond, cond_eff, decimal=8)
+
+
+if __name__ == "__main__":
+
+    # test_eta()
+    # test_example_3p1()
+    # test_problem_3p5()
+    # test_dielectric_loss()
+    # test_conductor_loss()
+    test_effective_conductivity()
