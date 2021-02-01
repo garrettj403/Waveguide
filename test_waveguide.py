@@ -90,7 +90,7 @@ def test_problem_3p5():
     assert phase == pytest.approx(2330.7, 0.2)
 
 
-def test_dielectric_loss():
+def test_dielectric_loss(debug=False):
 
     # Dielectric properties
     er_mag = 3
@@ -115,19 +115,20 @@ def test_dielectric_loss():
     beta = wg.phase_constant(f, a, b=b, er=er, ur=1, m=m, n=n)
     alphad2 = k ** 2 * tand / 2 / beta
 
-    # # Debug 
-    # plt.figure()
-    # plt.plot(f/1e9, alphad1, 'k')
-    # plt.plot(f/1e9, alphad2, 'r--')
-    # plt.xlabel("Frequency (GHz)")
-    # plt.ylabel("Attenuation Constant (Np/m)")
-    # plt.show()
+    # Debug 
+    if debug:
+        plt.figure()
+        plt.plot(f/1e9, alphad1, 'k')
+        plt.plot(f/1e9, alphad2, 'r--')
+        plt.xlabel("Frequency (GHz)")
+        plt.ylabel("Attenuation Constant (Np/m)")
+        plt.show()
 
     # Compare
     np.testing.assert_almost_equal(alphad1, alphad2, decimal=12)
 
 
-def test_conductor_loss():
+def test_conductor_loss(debug=False):
 
     # Waveguide conductivity [S/m]
     cond = 1e7
@@ -155,19 +156,20 @@ def test_conductor_loss():
               np.sqrt(4 * np.pi / lambda0 / sc.mu_0 / sc.c / cond) * \
               (1 + 2 * b / a * (lambda0 / lambdac)**2)
 
-    # # Debug 
-    # plt.figure()
-    # plt.plot(f/1e9, alphac1, 'k')
-    # plt.plot(f/1e9, alphac2, 'r--')
-    # plt.xlabel("Frequency (GHz)")
-    # plt.ylabel("Attenuation Constant (Np/m)")
-    # plt.show()
+    # Debug 
+    if debug:
+        plt.figure()
+        plt.plot(f/1e9, alphac1, 'k')
+        plt.plot(f/1e9, alphac2, 'r--')
+        plt.xlabel("Frequency (GHz)")
+        plt.ylabel("Attenuation Constant (Np/m)")
+        plt.show()
 
     # Compare
     np.testing.assert_almost_equal(alphac1, alphac2, decimal=12)
 
 
-def test_effective_conductivity():
+def test_effective_conductivity(debug=False):
 
     # Frequency sweep
     f = np.linspace(260, 400, 141) * 1e9
@@ -190,12 +192,13 @@ def test_effective_conductivity():
     cond_eff = wg.effective_conductivity(f, alphac, a, b, er=1, ur=1)
 
     # Debug
-    plt.figure()
-    plt.plot(f/1e9, cond * np.ones_like(f), 'k')
-    plt.plot(f/1e9, cond_eff, 'r--')
-    plt.xlabel("Frequency (GHz)")
-    plt.ylabel("Conductivity (S/m)")
-    plt.show()
+    if debug:
+        plt.figure()
+        plt.plot(f/1e9, cond * np.ones_like(f), 'k')
+        plt.plot(f/1e9, cond_eff, 'r--')
+        plt.xlabel("Frequency (GHz)")
+        plt.ylabel("Conductivity (S/m)")
+        plt.show()
 
     # Compare
     np.testing.assert_almost_equal(cond, cond_eff, decimal=8)
@@ -208,4 +211,4 @@ if __name__ == "__main__":
     # test_problem_3p5()
     # test_dielectric_loss()
     # test_conductor_loss()
-    test_effective_conductivity()
+    test_effective_conductivity(debug=True)
