@@ -263,11 +263,11 @@ def conductor_loss(f, cond, a, b, er=1, ur=1):
 
     """
 
-    if cond == 0 or cond is None:
+    if cond is None:
         return np.zeros_like(f)
 
     # Propagation properties
-    k = np.real(wavenumber(f, er=er, ur=ur))
+    k = np.real(wavenumber(f, er=er.real, ur=ur))
     beta = np.imag(propagation_constant(f, a, b, er=er, ur=ur, m=1, n=0))
     eta = np.real(intrinsic_impedance(er=er, ur=ur))
 
@@ -338,6 +338,21 @@ def conductivity_rough(f, cond, roughness, ur=1, model='groiss'):
         raise ValueError
 
     return cond / keff ** 2
+
+
+def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
+
+    # Propagation properties
+    k = np.real(wavenumber(f, er=er.real, ur=ur.real))
+    beta = np.imag(propagation_constant(f, a, b, er=er, ur=ur, m=1, n=0))
+    eta = np.real(intrinsic_impedance(er=er.real, ur=ur.real))
+
+    # Surface resistance
+    rs = alpha_c * (a**3 * b * beta * k * eta) / (2 * b * pi**2 + a**3 * k**2)
+
+    # Effective conductivity
+    return 2 * pi * f * ur * u0 / 2 / rs**2
+
 
 
 # WAVEGUIDE WITH DIELECTRIC SECTION -------------------------------------- ###
