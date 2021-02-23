@@ -1,15 +1,18 @@
+"""Tests for waveguide package."""
+
 import pytest
 import numpy as np
 import waveguide as wg
 import scipy.constants as sc
 import matplotlib.pyplot as plt 
 
+
 def test_eta():
     """Test intrinsic impedance of vacuum against known value."""
 
-    value = wg.intrinsic_impedance(1, 1)
-    scipy_value = sc.physical_constants['characteristic impedance of vacuum'][0]
-    assert value == pytest.approx(scipy_value)
+    val = wg.intrinsic_impedance(1, 1)
+    scipy_val = sc.physical_constants['characteristic impedance of vacuum'][0]
+    assert val == pytest.approx(scipy_val)
 
 
 def test_example_3p1():
@@ -129,6 +132,7 @@ def test_dielectric_loss(debug=False):
 
 
 def test_conductor_loss(debug=False):
+    """Compare to model from Maxwell's 1947 paper."""
 
     # Waveguide conductivity [S/m]
     cond = 1e7
@@ -204,11 +208,53 @@ def test_effective_conductivity(debug=False):
     np.testing.assert_almost_equal(cond, cond_eff, decimal=8)
 
 
+def test_db2np():
+    """Test converting linear to dB and Np."""
+
+    # Test array
+    value = np.array([1, 10, 100])
+
+    # Test dB value
+    value_db = wg.db10(value)
+    np.testing.assert_almost_equal(value_db, [0, 10, 20], decimal=10)
+
+    # Convert to Np
+    value_np = wg.db2np(value_db)
+    true_np = np.array([0, 1.1512925465, 2.302585093])
+    np.testing.assert_almost_equal(value_np, true_np, decimal=9)
+
+    # Test dB 20 value
+    value_db20 = wg.db20(value)
+    np.testing.assert_almost_equal(value_db, value_db20 / 2)
+
+    # Test back to dB
+    value_db_back = wg.np2db(value_np)
+    np.testing.assert_almost_equal(value_db_back, value_db)
+
+
+def test_deg2rad():
+    """Test converting degrees to radians."""
+
+    # Test array
+    angles = np.array([0, 90, 180])
+
+    # Convert to radians
+    angles_rad = wg.deg2rad(angles)
+    true_rad = np.array([0, np.pi / 2, np.pi])
+    np.testing.assert_almost_equal(angles_rad, true_rad)
+
+    # Convert back to degrees
+    angles_deg = wg.rad2deg(angles_rad)
+    np.testing.assert_almost_equal(angles_deg, angles)
+
+
 if __name__ == "__main__":
 
-    # test_eta()
-    # test_example_3p1()
-    # test_problem_3p5()
-    # test_dielectric_loss()
-    # test_conductor_loss()
+    test_eta()
+    test_example_3p1()
+    test_problem_3p5()
+    test_dielectric_loss(debug=True)
+    test_conductor_loss(debug=True)
     test_effective_conductivity(debug=True)
+    test_db2np()
+    test_deg2rad()
