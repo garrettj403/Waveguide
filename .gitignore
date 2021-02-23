@@ -4,3 +4,5 @@ __pycache__/
 
 dist/
 waveguide.egg-info/
+
+old/
