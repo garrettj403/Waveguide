@@ -337,7 +337,7 @@ def conductivity_rough(f, cond, roughness, ur=1, model='groiss'):
         print("Model not recognized.")
         raise ValueError
 
-    return cond / keff ** 2
+    return cond / (keff ** 2)
 
 
 def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
@@ -352,7 +352,6 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
 
     # Effective conductivity
     return 2 * pi * f * ur * u0 / 2 / rs**2
-
 
 
 # WAVEGUIDE WITH DIELECTRIC SECTION -------------------------------------- ###
@@ -405,6 +404,29 @@ def dielectric_sparam(f, a, b, er_mag, tand, cond, length1, length2, total_lengt
     s21_0 = r1 * r2 * np.exp(-gamma0 * length_d)
 
     return s11, s22, s21, s21_0
+
+
+# WAVEGUIDE CAVITY RESONATOR --------------------------------------------- ###
+
+def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1):
+    """Calculate the resonant frequency of a waveguide cavity.
+
+    Args:
+        a: a waveguide dimension
+        b: b waveguide dimension
+        d: length of waveguide cavity
+        m: mode number m
+        n: mode number n
+        l: resonance number l
+        er: relative permittivity
+        ur: relative permeability
+
+    Returns:
+        np.ndarray: resonant frequency
+
+    """
+
+    return c0 / 2 / pi / sqrt(er.real * ur.real) * sqrt((m*pi/a)**2 + (n*pi/b)**2 + (l*pi/d)**2)
 
 
 # HELPER FUNCTIONS ------------------------------------------------------- ###
