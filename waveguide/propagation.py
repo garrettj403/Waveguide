@@ -1,18 +1,13 @@
-"""Rectangular waveguide properties.
-
-Note: All units are in SI base units. E.g., all lengths are in [m].
-
-"""
+"""Propagation properties."""
 
 import numpy as np
-
-from numpy import sqrt, pi, log, log10, arctan
-from scipy.constants import epsilon_0 as e0
+from numpy import pi, sqrt, arctan
 from scipy.constants import c as c0
+from scipy.constants import epsilon_0 as e0
 from scipy.constants import mu_0 as u0
 
 
-# WAVEGUIDE PROPERTIES --------------------------------------------------- ###
+# PROPAGATION CONSTANT (GAMMA = ALPHA + j * BETA) ------------------------- ###
 
 def propagation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     """Calculate propagation constant (complex value).
@@ -88,6 +83,8 @@ def phase_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
 
     return propagation_constant(f, a, b=b, er=er, ur=ur, cond=cond, m=m, n=n).imag
 
+
+# PROPAGATION PROPERTIES -------------------------------------------------- ###
 
 def wavelength(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     """Calculate guided wavelength.
@@ -223,7 +220,7 @@ def impedance(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0, mode='TE'):
         raise ValueError
 
 
-# WAVEGUIDE LOSS --------------------------------------------------------- ###
+# LOSS -------------------------------------------------------------------- ###
 
 def dielectric_loss(f, a, b=None, er=1, ur=1, m=1, n=0):
     """Calculate dielectric loss.
@@ -277,6 +274,8 @@ def conductor_loss(f, cond, a, b, er=1, ur=1):
     # Conductor loss (Eqn. 3.96 in Pozar)
     return rs / (a**3 * b * beta * k * eta) * (2 * b * pi**2 + a**3 * k**2)
 
+
+# CONDUCTIVITY / SURFACE RESISTANCE --------------------------------------- ###
 
 def surface_resistance(f, cond, ur=1):
     """Calculate surface resistance.
@@ -352,110 +351,3 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
 
     # Effective conductivity
     return 2 * pi * f * ur * u0 / 2 / rs**2
-
-
-# WAVEGUIDE WITH DIELECTRIC SECTION -------------------------------------- ###
-
-def dielectric_sparam(f, a, b, er_mag, tand, cond, length1, length2, total_length):
-    """Calculate the S-parameters of a waveguide containing a section of
-    dielectric material.
-
-    Args:
-        f: frequency
-        a: broad waveguide dimension
-        b: narrow waveguide dimension
-        er_mag: relative permittivity magnitude of dielectric
-        tand: loss tangent of dielectric
-        cond: conductivity of waveguide walls
-        length1: length of empty waveguide between port 1 and the dielectric
-        length2: length of empty waveguide between port 2 and the dielectric
-        total_length: total length of the waveguide
-
-    Returns:
-        tuple: S-parameters: S11, S22, S21, and S21 of an empty waveguide
-
-    """
-
-    # Dielectric properties
-    er = er_mag * (1 - 1j * tand)
-    ur = 1
-
-    # Propagation constant (0 denotes empty waveguide)
-    gamma0 = propagation_constant(f, a, b=b, er=1, ur=1, cond=cond, m=1, n=0)
-    gamma = propagation_constant(f, a, b=b, er=er, ur=ur, cond=cond, m=1, n=0)
-
-    # Length of dielectric
-    length_d = total_length - length1 - length2
-
-    # Transmission coefficient
-    r1 = np.exp(-gamma0 * length1)  # empty waveguide connected to port 1
-    r2 = np.exp(-gamma0 * length2)  # empty waveguide connected to port 2
-    z = np.exp(-gamma * length_d)  # dielectric filled waveguide
-
-    # Reflection coefficient between air-filled and dielectric-filled waveguide
-    zte0 = impedance(f, a, b=b, er=1, ur=1, cond=cond, m=1, n=0, mode='TE')
-    zte = impedance(f, a, b=b, er=er, ur=ur, cond=cond, m=1, n=0, mode='TE')
-    reflec = (zte0 - zte) / (zte0 + zte)
-
-    # S-parameters
-    s11 = r1 ** 2 * (reflec * (1 - z ** 2) / (1 - reflec ** 2 * z ** 2))
-    s22 = r2 ** 2 * (reflec * (1 - z ** 2) / (1 - reflec ** 2 * z ** 2))
-    s21 = r1 * r2 * (z * (1 - reflec ** 2) / (1 - reflec ** 2 * z ** 2))
-    s21_0 = r1 * r2 * np.exp(-gamma0 * length_d)
-
-    return s11, s22, s21, s21_0
-
-
-# WAVEGUIDE CAVITY RESONATOR --------------------------------------------- ###
-
-def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1):
-    """Calculate the resonant frequency of a waveguide cavity.
-
-    Args:
-        a: a waveguide dimension
-        b: b waveguide dimension
-        d: length of waveguide cavity
-        m: mode number m
-        n: mode number n
-        l: resonance number l
-        er: relative permittivity
-        ur: relative permeability
-
-    Returns:
-        np.ndarray: resonant frequency
-
-    """
-
-    return c0 / 2 / pi / sqrt(er.real * ur.real) * sqrt((m*pi/a)**2 + (n*pi/b)**2 + (l*pi/d)**2)
-
-
-# HELPER FUNCTIONS ------------------------------------------------------- ###
-
-def db2np(value):
-    """Convert dB value to Np."""
-    return value * log(10) / 20
-
-
-def np2db(value):
-    """Convert Np value to dB."""
-    return value * 20 / log(10)
-
-
-def db10(value):
-    """Convert power-like value to dB."""
-    return 10 * log10(np.abs(value))
-
-
-def db20(value):
-    """Convert voltage-like value to dB."""
-    return 20 * log10(np.abs(value))
-
-
-def rad2deg(value):
-    """Convert radians to degrees."""
-    return value * 180 / pi
-
-
-def deg2rad(value):
-    """Convert degrees to radians."""
-    return value / 180 * pi
