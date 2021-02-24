@@ -1,3 +1,5 @@
+"""Tests for cavity sub-module."""
+
 import numpy as np
 import scipy.constants as sc
 from pytest import approx
@@ -37,7 +39,6 @@ def test_example_6p3():
     # Dielectric properties of polyethylene
     er_mag = 2.25
     tand = 4e-4
-    # er = er_mag * (1 - 1j * tand)
     ur = 1
 
     # Wavenumber

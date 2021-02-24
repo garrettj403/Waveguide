@@ -1,4 +1,4 @@
-"""Propagation properties."""
+"""Propagation in rectangular waveguides."""
 
 import numpy as np
 from numpy import pi, sqrt, arctan

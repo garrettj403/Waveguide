@@ -1,3 +1,5 @@
+"""Tests for utilities sub-module."""
+
 import numpy as np
 
 import waveguide as wg

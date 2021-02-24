@@ -157,7 +157,6 @@ def test_dielectric_loss(debug=False):
 
     # Frequency sweep
     f = np.linspace(260, 400, 141) * 1e9
-    w = 2 * np.pi * f
 
     # From propagation constant
     alphad1 = wg.dielectric_loss(f, a, b=b, er=er, ur=1, m=m, n=n)
@@ -189,25 +188,19 @@ def test_conductor_loss(debug=False):
     # Waveguide dimensions
     a, b = 28 * sc.mil, 14 * sc.mil
 
-    # Waveguide mode
-    m, n = 1, 0
-
     # Frequency sweep
     f = np.linspace(260, 400, 141) * 1e9
-    w = 2 * np.pi * f
 
     # From Eqn. 3.96 in Pozar
     alphac1 = wg.conductor_loss(f, cond, a, b, er=1, ur=1)
 
     # From Maxwell 1947
-    k = wg.wavenumber(f, er=1, ur=1)
-    beta = wg.phase_constant(f, a, b=b, er=1, ur=1, m=m, n=n)
     lambdac = 2 * a
     lambda0 = sc.c / f
     alphac2 = 1 / (2 * b) / \
-              np.sqrt(1 - (lambda0/lambdac)**2) * \
+              np.sqrt(1 - (lambda0 / lambdac) ** 2) * \
               np.sqrt(4 * np.pi / lambda0 / sc.mu_0 / sc.c / cond) * \
-              (1 + 2 * b / a * (lambda0 / lambdac)**2)
+              (1 + 2 * b / a * (lambda0 / lambdac) ** 2)
 
     # Debug
     if debug:
@@ -276,10 +269,10 @@ def test_cutoff():
 
 if __name__ == "__main__":
 
-    # test_example_3p1()
+    test_example_3p1()
     test_example_4p2()
-    # test_problem_3p5()
-    # test_eta()
-    # test_dielectric_loss(debug=True)
-    # test_conductor_loss(debug=True)
-    # test_effective_conductivity(debug=True)
+    test_problem_3p5()
+    test_eta()
+    test_dielectric_loss(debug=True)
+    test_conductor_loss(debug=True)
+    test_effective_conductivity(debug=True)
