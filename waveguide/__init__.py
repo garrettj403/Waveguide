@@ -7,7 +7,10 @@ from .propagation import (propagation_constant, attenuation_constant,
                           impedance, dielectric_loss, conductor_loss,
                           surface_resistance, skin_depth, conductivity_rough,
                           effective_conductivity)
-from .cavity import resonant_frequency, qfactor_dielectric, qfactor_conduction, qfactor_parallel
+from .cavity import (resonant_frequency, qfactor_dielectric, 
+                     qfactor_conduction, qfactor_parallel, find_resonances, 
+                     find_qfactor, q2surface_resistance, q2conductivity,
+                     resonant_frequency2permittivity, deembed_qfactor)
 from .dielectric import dielectric_sparam
 
 __author__ = "John Garrett"
