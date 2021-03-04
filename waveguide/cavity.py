@@ -256,7 +256,7 @@ def find_resonances(f, s21db, amp_interp=6, fspan=5e7, debug=False, **kwargs):
         f_resonances[i] = fc
 
     # Plot resonances
-    if debug:
+    if debug:  # pragma: no cover
         plt.figure()
         for _f in f_resonances:
             plt.axvline(_f, c='k', lw=0.5)
@@ -293,7 +293,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
     fres_list = np.array(fres_list, dtype=float)
 
     # Plot fitting (debug only)
-    if debug:
+    if debug:  # pragma: no cover
         nrow = -(-len(fres_list) // ncol)
         fig, ax = plt.subplots(nrow, ncol, figsize=figsize)
         fig.subplots_adjust(wspace=0, hspace=0)
@@ -361,7 +361,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
         g[i] = g0
 
         # Plot fitting (debug only)
-        if debug:
+        if debug:  # pragma: no cover
             row, col = i // ncol, i % ncol
 
             # Plot data
@@ -379,9 +379,9 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
             ax[row][col].text(0.98, 0.85, q_str, transform=ax[row][col].transAxes, ha='right')
 
     # Save figure
-    if debug and filename is not None:
+    if debug and filename is not None:  # pragma: no cover
         fig.savefig(filename, dpi=600)
-    if debug:
+    if debug:  # pragma: no cover
         plt.tight_layout()
         plt.show()
 

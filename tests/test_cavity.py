@@ -63,6 +63,10 @@ def test_example_6p3():
     eta = wg.intrinsic_impedance(er=er_mag, ur=ur)
     assert eta == approx(251.3, abs=0.2)
 
+    # Wavelength
+    lambdag = wg.wavelength(fres, a, b=b, er=er_mag, ur=1, cond=cond, m=1, n=0)
+    assert lambdag / 2 == approx(d, abs=1e-10)
+
     # Conduction Q-factor
     rs = wg.surface_resistance(f, cond, ur=ur)
     assert rs == approx(1.84e-2, abs=0.02e-2)
@@ -268,7 +272,7 @@ def test_simulated_cavity(debug=False):
 if __name__ == "__main__":
 
     # test_example_6p1()
-    # test_example_6p3()
+    test_example_6p3()
     # test_problem_6p9()
     # test_problem_6p23()
-    test_simulated_cavity(debug=True)
+    # test_simulated_cavity(debug=True)

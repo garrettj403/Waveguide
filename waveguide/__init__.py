@@ -12,7 +12,7 @@ from .cavity import (resonant_frequency, qfactor_dielectric,
                      find_qfactor, q2surface_resistance, q2conductivity,
                      resonant_frequency2permittivity, deembed_qfactor,
                      q2loss_tangent)
-from .dielectric import dielectric_sparam
+# from .dielectric import dielectric_sparam
 
 __author__ = "John Garrett"
 __version__ = "0.0.2"

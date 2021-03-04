@@ -87,8 +87,10 @@ def test_example_4p2():
     assert beta_d == approx(304.1, abs=0.5)
 
     # Characteristic impedance
-    z0_a = wg.impedance(f, a, b, er=1)
-    z0_d = wg.impedance(f, a, b, er=er_mag)
+    z0_a = wg.impedance(f, a, b, er=1, ur=1, m=1, n=0, mode='TE')
+    z0_d = wg.impedance(f, a, b, er=er_mag, ur=1, m=1, n=0, mode='TE')
+    with pytest.raises(ValueError):
+        wg.impedance(f, a, b, mode='TEM')
     print(z0_a)
     print(z0_d)
     assert z0_a == approx(500.0, abs=1)
@@ -267,12 +269,36 @@ def test_cutoff():
     assert 2 * np.pi / wg.cutoff_wavenumber(a) == approx(lambda_c)
 
 
+def test_rough_conductivity():
+
+    f = 100e9
+    cond = 1e7
+    roughness1 = 1e-15
+    roughness2 = 1
+
+    # Groiss
+    cond_eff1 = wg.conductivity_rough(f, cond, roughness1, model='groiss')
+    cond_eff2 = wg.conductivity_rough(f, cond, roughness2, model='groiss')
+    assert cond_eff1 / cond == approx(1, abs=1e-15)
+    assert cond_eff2 / cond == approx(0.25, abs=1e-10)
+
+    # HB
+    cond_eff1 = wg.conductivity_rough(f, cond, roughness1, model='hb')
+    cond_eff2 = wg.conductivity_rough(f, cond, roughness2, model='hb')
+    assert cond_eff1 / cond == approx(1, abs=1e-15)
+    assert cond_eff2 / cond == approx(0.25, abs=1e-10)
+
+    with pytest.raises(ValueError):
+        wg.conductivity_rough(f, cond, roughness1, model='gradient')
+
+
 if __name__ == "__main__":
 
-    test_example_3p1()
-    test_example_4p2()
-    test_problem_3p5()
-    test_eta()
-    test_dielectric_loss(debug=True)
-    test_conductor_loss(debug=True)
-    test_effective_conductivity(debug=True)
+    # test_example_3p1()
+    # test_example_4p2()
+    # test_problem_3p5()
+    # test_eta()
+    # test_dielectric_loss(debug=True)
+    # test_conductor_loss(debug=True)
+    # test_effective_conductivity(debug=True)
+    test_rough_conductivity()
