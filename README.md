@@ -1,4 +1,4 @@
 Waveguide
 =========
 
-This package has functions to calculate the various properties of rectangular waveguides.
+*Calculate the properties of rectangular waveguides*
