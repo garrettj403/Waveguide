@@ -8,3 +8,5 @@ htmlcov/
 waveguide.egg-info/
 
 old/
+
+new-version.md
