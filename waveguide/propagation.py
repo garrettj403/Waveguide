@@ -343,14 +343,15 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
     """Calculate effective conductivity from attenuation constant.
 
     Args:
-        f:
-        alpha_c:
-        a:
-        b:
-        er:
-        ur:
+        f: frequency, in units [Hz]
+        alpha_c: conductor attenuation constant, in units [Np/m]
+        a: waveguide dimension a, in units [m]
+        b: waveguide dimension b, in units [m]
+        er: relative permittivity
+        ur: relative permeability
 
     Returns:
+        effective conductivity
 
     """
 

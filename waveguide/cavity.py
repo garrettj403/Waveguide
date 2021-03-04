@@ -7,7 +7,7 @@ import scipy.constants as sc
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
-from scipy.optimize import fminbound
+# from scipy.optimize import fminbound
 
 from .propagation import surface_resistance, wavenumber, intrinsic_impedance
 
@@ -268,7 +268,7 @@ def find_resonances(f, s21db, amp_interp=6, fspan=5e7, debug=False, **kwargs):
     return f_resonances
 
 
-def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(15,25), filename=None):
+def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(15, 25), filename=None):
     """Calculate Q-factor from experimental S21 magnitude.
 
     Args:
@@ -278,6 +278,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
             in units [Hz]
         fspan (float): width of frequency span to examine
         debug (bool): plot fitting?
+        ncol (int): number of columns for plot
         figsize (tuple): figure size
         filename (str): filename for Q-factor plot
 
