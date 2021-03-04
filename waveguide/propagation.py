@@ -340,6 +340,19 @@ def conductivity_rough(f, cond, roughness, ur=1, model='groiss'):
 
 
 def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
+    """Calculate effective conductivity from attenuation constant.
+
+    Args:
+        f:
+        alpha_c:
+        a:
+        b:
+        er:
+        ur:
+
+    Returns:
+
+    """
 
     # Propagation properties
     k = np.real(wavenumber(f, er=er.real, ur=ur.real))
