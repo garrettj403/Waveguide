@@ -37,10 +37,10 @@ class PyTest(TestCommand):
 setup(
     name="waveguide",
     # version=waveguide.__version__,
-    version="0.0.1",
+    version="0.0.2",
     author="John Garrett",
     author_email="garrettj403@gmail.com",
-    description="Calculate the various properties of rectangular waveguides",
+    description="Calculate the properties of rectangular waveguides",
     license="MIT",
     url="https://github.com/garrettj403/Waveguide/",
     # keywords=[],
