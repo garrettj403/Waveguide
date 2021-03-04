@@ -1,16 +1,17 @@
 """Install waveguide package."""
 
 import io
-import os
 import sys
 from os import path
 
-from setuptools import find_packages, setup
+from setuptools import setup  # find_packages
 from setuptools.command.test import test as TestCommand
 
 import waveguide
 
+
 root = path.abspath(path.dirname(__file__))
+
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -21,7 +22,9 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
+
 long_description = read('README.md')
+
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -34,10 +37,10 @@ class PyTest(TestCommand):
         errcode = pytest.main(self.test_args)
         sys.exit(errcode)
 
+
 setup(
     name="waveguide",
-    # version=waveguide.__version__,
-    version="0.0.2",
+    version=waveguide.__version__,
     author="John Garrett",
     author_email="garrettj403@gmail.com",
     description="Calculate the properties of rectangular waveguides",
@@ -48,10 +51,13 @@ setup(
     py_modules=['waveguide'],
     install_requires=[
         'numpy',
-        'scipy',],
+        'scipy',
+    ],
     extras_require={
         'testing': ['pytest'],
-        'examples': ['matplotlib', 'scikit-rf',],},
+        'examples': ['matplotlib',
+                     'scikit-rf', ],
+    },
     tests_require=['pytest'],
     cmdclass={'test': PyTest},
     long_description=long_description,
@@ -63,9 +69,11 @@ setup(
         "Natural Language :: English",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",],
+        "Programming Language :: Python :: 3.7",
+    ],
     project_urls={
         'Changelog': 'https://github.com/garrettj403/Waveguide/blob/master/CHANGES.md',
-        'Issue Tracker': 'https://github.com/garrettj403/Waveguide/issues',},
+        'Issue Tracker': 'https://github.com/garrettj403/Waveguide/issues',
+    },
     # scripts=[],
 )

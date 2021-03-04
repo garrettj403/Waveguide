@@ -15,4 +15,4 @@ from .cavity import (resonant_frequency, qfactor_dielectric,
 from .dielectric import dielectric_sparam
 
 __author__ = "John Garrett"
-__version__ = "0.0.1-dev"
+__version__ = "0.0.2"
