@@ -149,6 +149,32 @@ def test_problem_6p23():
     assert length == approx(2.24 * sc.centi, abs=0.05 * sc.centi)
 
 
+def test_example_4p14():
+    """Test example 4.14 in "RF and Microwave Engineering" - Gustrau """
+
+    # Waveguide cavity dimensions
+    a, b, d = 24*sc.milli, 10*sc.milli, 40*sc.milli
+
+    # They use c = 3e8 m/s (I mean come on...)
+    corr = 3e8 / sc.c
+
+    # Test values
+    abs_tol = 0.001e9
+    assert wg.resonant_frequency(a, b, d, m=1, n=0, l=1) * corr == approx( 7.289e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=0, n=1, l=1) * corr == approx(15.462e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=1, l=0) * corr == approx(16.250e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=1, l=1) * corr == approx(16.677e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=2, n=0, l=1) * corr == approx(13.050e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=0, l=2) * corr == approx( 9.763e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=0, n=1, l=2) * corr == approx(16.771e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=0, n=2, l=1) * corr == approx(30.233e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=2, l=0) * corr == approx(30.644e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=2, n=1, l=0) * corr == approx(19.526e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=2, n=1, l=1) * corr == approx(19.882e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=2, l=1) * corr == approx(30.873e9, abs=abs_tol)
+    assert wg.resonant_frequency(a, b, d, m=1, n=1, l=2) * corr == approx(17.897e9, abs=abs_tol)
+
+
 def test_simulated_cavity(debug=False):
 
     # Dimensions
@@ -207,6 +233,26 @@ def test_simulated_cavity(debug=False):
     # Test
     np.testing.assert_allclose(cond_q, cond*np.ones_like(cond_q), atol=1e6)
     np.testing.assert_allclose(cond_theory, cond * np.ones_like(cond_q), atol=1)
+
+
+def test_lossy_cavity():
+    """Test example from:
+
+    http://site.iugaza.edu.ps/tskaik/files/Microwave-Resonators.pdf
+
+    """
+
+    # Waveguide cavity dimensions
+    a, b, d = 5e-2, 4e-2, 10e-2
+    cond = 5.8e7
+
+    # Resonant frequency
+    f_te101 = wg.resonant_frequency(a, b, d, l=1)
+    assert f_te101 == approx(3.354e9, abs=0.01e9)
+
+    # Quality factor
+    qc = wg.qfactor_conduction(a, b, d, cond, m=1, n=0, l=1)
+    assert qc == approx(14365, abs=5)
 
 
 # def test_simulated_cavity_with_hdpe(debug=False):
@@ -272,7 +318,8 @@ def test_simulated_cavity(debug=False):
 if __name__ == "__main__":
 
     # test_example_6p1()
-    test_example_6p3()
+    # test_example_6p3()
     # test_problem_6p9()
     # test_problem_6p23()
     # test_simulated_cavity(debug=True)
+    test_lossy_cavity()
