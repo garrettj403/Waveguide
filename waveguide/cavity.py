@@ -63,6 +63,39 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0):
     return (term1 * term2 / fres) ** 2
 
 
+def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250):
+    """Guess resonance model, ell, for measured data.
+
+    Args:
+        fres (np.ndarray): resonant frequencies, measured, in [Hz]
+        a: a waveguide dimension
+        b: b waveguide dimension
+        d: length of waveguide cavity
+        m: mode number m
+        n: mode number n
+        er: relative permittivity
+        ur: relative permeability
+        lstart_max: maximum starting resonance order to test
+
+    """
+
+    # Number of resonant frequencies
+    npts = len(fres)
+
+    # Resonant frequency from theory
+    ell_theory = np.arange(int(lstart_max) + npts + 1)
+    fres_theory = resonant_frequency(a, b, d, m=m, n=n, l=ell_theory, er=er, ur=ur)
+
+    # Find minimum error to estimate the resonance order
+    error = np.empty(lstart_max)
+    for i in range(int(lstart_max)):
+        error[i] = np.sum(np.abs(fres - fres_theory[i:i+npts]))
+    ell_start = error.argmin()
+    ell = np.arange(ell_start, ell_start + npts)
+
+    return ell
+
+
 # Q-FACTOR ---------------------------------------------------------------- ###
 
 def qfactor_dielectric(tand):

@@ -198,8 +198,7 @@ def test_simulated_cavity(debug=False):
     fres, q0, ql, _ = wg.find_qfactor(f, np.abs(s21), fres_list, fspan=5e7, ncol=6, figsize=(14,8), debug=debug)
 
     # Resonant frequencies (theory)
-    ell_start = 3
-    ell = np.arange(ell_start, ell_start + len(fres))
+    ell = wg.guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1)
     fres_theory = wg.resonant_frequency(a, b, d, l=ell)
     np.testing.assert_almost_equal(fres / 1e9, fres_theory / 1e9, decimal=1)
 
@@ -321,5 +320,5 @@ if __name__ == "__main__":
     # test_example_6p3()
     # test_problem_6p9()
     # test_problem_6p23()
-    # test_simulated_cavity(debug=True)
-    test_lossy_cavity()
+    test_simulated_cavity(debug=True)
+    # test_lossy_cavity()
