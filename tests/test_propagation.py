@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import scipy.constants as sc
+import skrf as rf
 from pytest import approx
 
 import waveguide as wg
 
+# Test against examples in Pozar ----------------------------------------- ###
 
 def test_example_1p2():
     """Test example 1.2 in Pozar."""
@@ -136,15 +138,62 @@ def test_problem_3p5():
     assert phase == pytest.approx(2330.7, 0.2)
 
 
-def test_eta():
-    """Test intrinsic impedance of vacuum against known value."""
+# Test against Scikit-RF ------------------------------------------------- ###
 
-    val = wg.intrinsic_impedance(1, 1)
-    scipy_val = sc.physical_constants['characteristic impedance of vacuum'][0]
-    assert val == pytest.approx(scipy_val)
+def test_against_scikit_rf():
+    """Test again Scikit-RF: simple waveguide"""
 
+    # WR-90
+    a, b = 0.9*sc.inch, 0.45*sc.inch
+
+    # Conductivity, S/m
+    cond = 2e7
+
+    # Scikit-RF
+    freq = rf.Frequency()
+    freq.f = np.linspace(7, 13, 601) * sc.giga
+    wr90 = rf.RectangularWaveguide(freq, a=a, b=b, rho=1/cond)
+    
+    # Phase constant
+    beta = wg.phase_constant(freq.f, a, b=b, cond=cond)
+    np.testing.assert_almost_equal(wr90.beta, beta, decimal=12)
+
+
+    # Attenuation constant
+    alpha = wg.attenuation_constant(freq.f, a, b=b, cond=cond)
+    np.testing.assert_almost_equal(wr90.alpha, alpha, decimal=12)
+
+
+def test_against_scikit_rf_hdpe():
+    """Test again Scikit-RF: HDPE-filled waveguide"""
+
+    # WR-90
+    a, b = 0.9*sc.inch, 0.45*sc.inch
+
+    # Conductivity, S/m
+    cond = 2e7
+
+    # Relatively permittivity
+    er = 2.3
+
+    # Scikit-RF
+    freq = rf.Frequency()
+    freq.f = np.linspace(7, 13, 601) * sc.giga
+    wr90 = rf.RectangularWaveguide(freq, a=a, b=b, rho=1/cond, ep_r=er)
+    
+    # Phase constant
+    beta = wg.phase_constant(freq.f, a, b=b, cond=cond, er=er)
+    np.testing.assert_almost_equal(wr90.beta, beta, decimal=14)
+
+    # Attenuation constant
+    alpha = wg.attenuation_constant(freq.f, a, b=b, cond=cond, er=er)
+    np.testing.assert_almost_equal(wr90.alpha, alpha, decimal=14)
+
+
+# Test loss functions ---------------------------------------------------- ###
 
 def test_dielectric_loss(debug=False):
+    """Test dielectric loss against Eqn. 3.29 in Pozar."""
 
     # Dielectric properties
     er_mag = 3
@@ -218,6 +267,8 @@ def test_conductor_loss(debug=False):
 
 
 def test_effective_conductivity(debug=False):
+    """Calculate attenuation constant using known conductivity, and then
+    recover conductivity from attenuation constant."""
 
     # Frequency sweep
     f = np.linspace(260, 400, 141) * 1e9
@@ -253,23 +304,10 @@ def test_effective_conductivity(debug=False):
     np.testing.assert_almost_equal(cond, cond_eff, decimal=8)
 
 
-def test_cutoff():
-
-    # WR-28
-    a, b = 280*sc.mil, 140*sc.mil
-
-    # Cutoff wavelength for TE10
-    lambda_c = 2 * a
-    f_c = sc.c / 2 / a
-
-    # Cutoff frequency
-    assert wg.cutoff_frequency(a) == approx(f_c)
-
-    # Cutoff wavenumber
-    assert 2 * np.pi / wg.cutoff_wavenumber(a) == approx(lambda_c)
-
+# Other tests ------------------------------------------------------------ ###
 
 def test_rough_conductivity():
+    """Test extreme limits of rough conductivity models."""
 
     f = 100e9
     cond = 1e7
@@ -292,13 +330,51 @@ def test_rough_conductivity():
         wg.conductivity_rough(f, cond, roughness1, model='gradient')
 
 
+def test_eta():
+    """Test intrinsic impedance of vacuum against known value."""
+
+    val = wg.intrinsic_impedance(1, 1)
+    scipy_val = sc.physical_constants['characteristic impedance of vacuum'][0]
+    assert val == pytest.approx(scipy_val)
+
+
+def test_cutoff():
+    """Test cutoff frequency of TE10 mode."""
+
+    # WR-28
+    a, b = 280*sc.mil, 140*sc.mil
+
+    # Cutoff wavelength for TE10
+    lambda_c = 2 * a
+    f_c = sc.c / 2 / a
+
+    # Cutoff frequency
+    assert wg.cutoff_frequency(a) == approx(f_c)
+
+    # Cutoff wavenumber
+    assert 2 * np.pi / wg.cutoff_wavenumber(a) == approx(lambda_c)
+
+
+# Main ------------------------------------------------------------------- ###
+
 if __name__ == "__main__":
 
-    # test_example_3p1()
-    # test_example_4p2()
-    # test_problem_3p5()
-    # test_eta()
-    # test_dielectric_loss(debug=True)
-    # test_conductor_loss(debug=True)
-    # test_effective_conductivity(debug=True)
+    # Test against examples in Pozar
+    test_example_1p2()
+    test_example_3p1()
+    test_example_4p2()
+    test_problem_3p5()
+
+    # Test against Scikit-RF
+    test_against_scikit_rf()
+    test_against_scikit_rf_hdpe()
+
+    # Test loss functions
+    test_dielectric_loss(debug=True)
+    test_conductor_loss(debug=True)
+    test_effective_conductivity(debug=True)
+
+    # Other tests
     test_rough_conductivity()
+    test_eta()
+    test_cutoff()
