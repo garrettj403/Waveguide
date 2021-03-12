@@ -33,7 +33,9 @@ plt.ylabel(r"Phase constant, $\beta$ (rad/m)")
 plt.xlabel("Frequency (GHz)")
 plt.xlim([7, 13])
 ```
+
 <img src="https://raw.githubusercontent.com/garrettj403/Waveguide/main/examples/results/simple-waveguide-phase-constant.png" width="500">
+
 Attenuation constant:
 ```python
 alpha = wg.attenuation_constant(freq, a, b, cond=cond)
@@ -44,4 +46,5 @@ plt.ylabel(r"Attenuation constant, $\beta$ (Np/m)")
 plt.xlabel("Frequency (GHz)")
 plt.xlim([7, 13])
 ```
+
 <img src="https://raw.githubusercontent.com/garrettj403/Waveguide/main/examples/results/simple-waveguide-attenuation-constant.png" width="500">
