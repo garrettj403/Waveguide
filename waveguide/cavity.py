@@ -64,7 +64,7 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0):
 
 
 def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250):
-    """Guess resonance model, ell, for measured data.
+    """Guess resonance order, ell, from measured data.
 
     Args:
         fres (np.ndarray): resonant frequencies, measured, in [Hz]
