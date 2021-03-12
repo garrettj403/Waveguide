@@ -175,6 +175,19 @@ def test_example_4p14():
     assert wg.resonant_frequency(a, b, d, m=1, n=1, l=2) * corr == approx(17.897e9, abs=abs_tol)
 
 
+def test_simple_cavity():
+    """Test simple waveguide cavity."""
+
+    a, b, d = 5*sc.centi, 4*sc.centi, 10*sc.centi
+    cond = 5.8e7 
+
+    f_te101 = wg.resonant_frequency(a, b, d, m=1, n=0, l=1)
+    assert f_te101 / 1e9 == approx(3.354, abs=0.01)
+
+    qc_theory = wg.qfactor_conduction(a, b, d, cond, m=1, n=0, l=1)
+    assert qc_theory == approx(14365, abs=5)
+
+
 def test_simulated_cavity(debug=False):
 
     # Dimensions
@@ -204,6 +217,15 @@ def test_simulated_cavity(debug=False):
 
     # Q-factor (theory)
     qc_theory = wg.qfactor_conduction(a, b, d, cond, l=ell)
+
+    # Q-factor (theory)
+    w = 2 * np.pi * fres_theory
+    k = w / sc.c
+    rs = np.sqrt(w * sc.mu_0 / 2 / cond)
+    eta = 120 * np.pi
+    qc_theory2 = (k * a * d) ** 3 * b * eta / (2 * np.pi ** 2 * rs) 
+    qc_theory2 /= 2 * ell ** 2 * a ** 3 * b + 2 * b * d ** 3 + ell ** 2 * a ** 3 * d + a * d ** 3
+    np.testing.assert_allclose(qc_theory, qc_theory2, atol=3)
 
     # Plot Q-factor
     if debug:
