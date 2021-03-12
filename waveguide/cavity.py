@@ -408,8 +408,8 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
             # Print info
             f_str = "f: {:.1f} GHz".format(f0/1e9)
             q_str = "Q: {:.0f}".format(q0)
-            ax[row][col].text(0.02, 0.85, f_str, transform=ax[row][col].transAxes, ha='left')
-            ax[row][col].text(0.98, 0.85, q_str, transform=ax[row][col].transAxes, ha='right')
+            ax[row][col].text(0.05, 0.85, f_str, transform=ax[row][col].transAxes, fontsize=16, ha='left')
+            ax[row][col].text(0.95, 0.85, q_str, transform=ax[row][col].transAxes, fontsize=16, ha='right')
 
     # Save figure
     if debug and filename is not None:  # pragma: no cover

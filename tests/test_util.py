@@ -1,4 +1,4 @@
-"""Tests for utilities sub-module."""
+"""Test utilities sub-module."""
 
 import numpy as np
 
