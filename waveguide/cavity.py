@@ -16,7 +16,7 @@ from .propagation import surface_resistance, wavenumber, intrinsic_impedance
 eta0 = sc.physical_constants['characteristic impedance of vacuum'][0]
 
 
-def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1):
+def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, bshunt=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -28,19 +28,26 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1):
         l: resonance number l
         er: relative permittivity
         ur: relative permeability
+        bshunt: normalized shunt susceptance of iris
 
     Returns:
         np.ndarray: resonant frequency
 
     """
 
+    # Correct for susceptance of iris
+    if bshunt is not None:
+        corr = np.arctan(1 / bshunt) / d
+    else:
+        corr = 0
+
     term1 = c0 / 2 / pi / sqrt(er.real * ur.real)
-    term2 = sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2 + (l * pi / d) ** 2)
+    term2 = sqrt((m * pi / a)**2 + (n * pi / b)**2 + (l * pi / d - corr)**2)
 
     return term1 * term2
 
 
-def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0):
+def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, bshunt=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -51,14 +58,21 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0):
         d: length of waveguide cavity
         m: mode number m
         n: mode number n
+        bshunt: normalized shunt susceptance of iris
 
     Returns:
         np.ndarray: resonant frequency
 
     """
 
+    # Correct for susceptance of iris
+    if bshunt is not None:
+        corr = np.arctan(1 / bshunt) / d
+    else:
+        corr = 0
+
     term1 = c0 / 2 / pi
-    term2 = sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2 + (l_order * pi / d) ** 2)
+    term2 = sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2 + (l_order * pi / d - corr) ** 2)
 
     return (term1 * term2 / fres) ** 2
 
