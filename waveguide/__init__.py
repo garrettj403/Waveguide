@@ -6,7 +6,7 @@ from .propagation import (propagation_constant, attenuation_constant,
                           wavenumber, cutoff_wavenumber, cutoff_frequency,
                           impedance, dielectric_loss, conductor_loss,
                           surface_resistance, skin_depth, conductivity_rough,
-                          effective_conductivity)
+                          effective_conductivity, conductivity_4k)
 from .cavity import (resonant_frequency, qfactor_dielectric, 
                      qfactor_conduction, qfactor_parallel, find_resonances, 
                      find_qfactor, q2surface_resistance, q2conductivity,
