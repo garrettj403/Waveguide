@@ -5,7 +5,7 @@ from numpy import pi, sqrt, arctan
 from scipy.constants import c as c0
 from scipy.constants import epsilon_0 as e0
 from scipy.constants import mu_0 as u0
-
+from scipy.constants import m_e, e
 
 # PROPAGATION CONSTANT (GAMMA = ALPHA + j * BETA) ------------------------- ###
 
@@ -29,6 +29,9 @@ def propagation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
 
     """
 
+    if b is None:
+        b = a / 2
+    
     k = wavenumber(f, er, ur)
     kc = cutoff_wavenumber(a, b, m, n)
     alpha_c = conductor_loss(f, cond, a, b, er=er, ur=ur)
@@ -365,3 +368,23 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
 
     # Effective conductivity
     return 2 * pi * f * ur * u0 / 2 / rs**2
+
+
+def conductivity_4k(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
+    """Calculate the effective conductivity at 4K in the regime of the 
+    anomalous skin effect.
+
+    Args:
+        freq (float): frequency in [Hz]
+        fermi_speed (float): Fermi speed in [m/s]
+        e_density (float): electron density [m-3]
+        mu_r (float): relative permeability
+
+    Returns:
+        float: effective conductivity
+
+    """
+
+    return (beta ** 2 * e_density ** 2 * e ** 4 / 
+        (pi * mu_r * u0 * m_e ** 2 * fermi_speed ** 2 * freq)) ** (1 / 3)
+
