@@ -7,8 +7,8 @@ def thin_iris(wg, diameter):
     """Create circular iris Scikit-RF component.
 
     Args:
-        wg: instance of skrf.RectangularWaveguide class
-        diameter: diameter of circular iris
+        wg (skrf.RectangularWaveguide): rectangular waveguide
+        diameter (float): diameter of circular iris, in [m]
 
     Returns:
         skrf.RectangularWaveguide.line: iris
