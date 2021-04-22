@@ -47,7 +47,7 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, bshunt=None):
     return term1 * term2
 
 
-def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, bshunt=None):
+def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, correction=0, bshunt=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -71,10 +71,12 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, bshunt=Non
     else:
         corr = 0
 
+    fres_corr = fres - fres * correction 
+
     term1 = c0 / 2 / pi
     term2 = sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2 + (l_order * pi / d - corr) ** 2)
 
-    return (term1 * term2 / fres) ** 2
+    return (term1 * term2 / fres_corr) ** 2
 
 
 def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250):
@@ -315,7 +317,7 @@ def find_resonances(f, s21db, amp_interp=6, fspan=5e7, debug=False, **kwargs):
     return f_resonances
 
 
-def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(15, 25), filename=None):
+def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol=4, figsize=(15, 25), filename=None):
     """Calculate Q-factor from experimental S21 magnitude.
 
     Args:
@@ -376,7 +378,10 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
         f2 = np.interp(peak_3db, s21hi[::-1], fhi[::-1])
         fres_mid = (f1 + f2) / 2
         fres_span = f2 - f1
-        q_3db = fres_mid / fres_span
+        if q_init is None:
+            q_3db = fres_mid / fres_span
+        else:
+            q_3db = q_init
 
         # Resonance model: 3 baseline coefficients
         def _model(x, ymax, xc, q, a1, a2, a3):
@@ -390,7 +395,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
 
         # Unpack
         f0 = popt[1]
-        ql = popt[2]
+        ql = abs(popt[2])
 
         # Get unloaded
         # def _model_opt(x):
@@ -421,7 +426,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, debug=False, ncol=4, figsize=(
 
             # Print info
             f_str = "f: {:.1f} GHz".format(f0/1e9)
-            q_str = "Q: {:.0f}".format(q0)
+            q_str = "Q: {:.0f}".format(ql)
             ax[row][col].text(0.05, 0.85, f_str, transform=ax[row][col].transAxes, fontsize=16, ha='left')
             ax[row][col].text(0.95, 0.85, q_str, transform=ax[row][col].transAxes, fontsize=16, ha='right')
 
