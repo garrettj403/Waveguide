@@ -1,6 +1,7 @@
 """Rectangular waveguide properties."""
 
-from .util import db2np, np2db, db10, db20, rad2deg, deg2rad
+from .util import (db2np, np2db, db10, db20, rad2deg, deg2rad, linear10, 
+                   linear20)
 from .propagation import (propagation_constant, attenuation_constant,
                           phase_constant, wavelength, intrinsic_impedance,
                           wavenumber, cutoff_wavenumber, cutoff_frequency,

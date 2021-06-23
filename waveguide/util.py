@@ -4,6 +4,16 @@ import numpy as np
 from numpy import log, log10, pi
 
 
+def linear20(value):
+    """Convert dB value to linear units (voltage-like)."""
+    return 10 ** (value / 20)
+
+
+def linear10(value):
+    """Convert dB value to linear units (power-like)."""
+    return 10 ** (value / 10)
+
+
 def db2np(value):
     """Convert dB value to Np."""
     return value * log(10) / 20
