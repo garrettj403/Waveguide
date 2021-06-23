@@ -231,10 +231,12 @@ def test_simulated_cavity(debug=False):
     if debug:
         plt.figure()
         plt.plot(ell, qc_theory, 'ko--', label='Theory')
-        plt.plot(ell, q0, 'ro--', label="Q-factor (corrected)")
-        plt.plot(ell, ql, 'bo--', label="Q-factor (loaded)")
+        plt.plot(ell, q0, 'ro--', label="Sim: corrected")
+        plt.plot(ell, ql, 'bo--', label="Sim: loaded")
+        plt.xlabel(r"Resonance order, $\ell$")
+        plt.legend(title="Q-factor")
+        plt.ylabel("Q-factor")
         plt.xlim(xmin=0)
-        plt.legend()
         plt.show()
 
     # Get conductivity from Q-factor
@@ -244,11 +246,12 @@ def test_simulated_cavity(debug=False):
     # Plot conductivity
     if debug:
         plt.figure()
-        plt.plot(fres, cond_q, 'bo-', label="From Q-factor")
-        plt.plot(fres_theory, cond_theory, 'ro--', label="From theory")
-        plt.axhline(cond, c='k', ls='--')
+        plt.plot(fres, cond_q, 'bo-', label="Simulation")
+        plt.plot(fres_theory, cond_theory, 'ro--', label="Theory")
+        plt.axhline(cond, c='k', ls='--', label="True value")
         plt.ylabel("Conductivity (S/m)")
         plt.xlabel("Frequency (GHz)")
+        plt.legend()
         plt.show()
 
     # Test
