@@ -4,9 +4,11 @@ Waveguide
 *Calculate the various properties of rectangular waveguides*
 
 For example:
-- Cutoff frequency
-- Phase constant
-- Attenuation constant due to conductor and/or dielectric loss
+- Cutoff frequency of various modes
+- Attenuation due to conductor and/or dielectric loss
+- Surface resistance and skin depth
+- Effective conductivity at cryogenic temperatures (anomalous skin effect)
+- Properties of waveguide cavities: resonant frequency, Q-factor
 
 Example 1: Properties of a WR-90 Waveguide
 ------------------------------------------
@@ -88,7 +90,7 @@ ax.set_ylabel("Frequency range (GHz)")
 ax.set_ylim([20, 500])
 ax.grid(which='both')
 plt.yticks(ticks=[20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500], 
-	       labels=[20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500])
+           labels=[20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400, 500])
 ax.set_xticks(ticks=wr_sizes, minor=False)
 ax.set_xticks(ticks=[], minor=True)
 plt.xticks(ticks=wr_sizes, labels=wr_sizes, rotation=90)
@@ -144,3 +146,12 @@ plt.xlim([22, 42])
 <p align="center">
 <img src="https://raw.githubusercontent.com/garrettj403/Waveguide/main/examples/results/alumina-filled-waveguide-sparam.png" width="500">
 </p>
+
+References
+----------
+
+The equations in this package are taken from:
+
+- D. M. Pozar, Microwave Engineering, 4th ed. John Wiley & Sons, Inc., 2011.
+
+- N. Marcuvitz, Waveguide Handbook. McGraw-Hill Book Company, Inc., 1951.
