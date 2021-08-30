@@ -16,7 +16,7 @@ from .propagation import surface_resistance, wavenumber, intrinsic_impedance
 eta0 = sc.physical_constants['characteristic impedance of vacuum'][0]
 
 
-def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None, bshunt=None):
+def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -37,9 +37,7 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None
     """
 
     # Correct for susceptance of iris
-    if bshunt is not None:
-        corr = np.arctan(2 / bshunt)
-    elif phase_correction is not None:
+    if phase_correction is not None:
         corr = 2 * phase_correction
     else:
         corr = 0
@@ -50,7 +48,7 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None
     return term1 * term2
 
 
-def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, correction=0, phase_correction=None, bshunt=None):
+def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, phase_correction=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -70,19 +68,15 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, correction
     """
 
     # Correct for susceptance of iris
-    if bshunt is not None:
-        corr = np.arctan(1 / bshunt) / d
-    elif phase_correction is not None:
-        corr = phase_correction / d / 2
+    if phase_correction is not None:
+        corr = 2 * phase_correction
     else:
         corr = 0
 
-    fres_corr = fres - fres * correction 
-
     term1 = c0 / 2 / pi
-    term2 = sqrt((m * pi / a) ** 2 + (n * pi / b) ** 2 + (l_order * pi / d - corr) ** 2)
+    term2 = sqrt((m * pi / a)**2 + (n * pi / b)**2 + ((l_order * pi - corr) / d)**2)
 
-    return (term1 * term2 / fres_corr) ** 2
+    return (term1 * term2 / fres) ** 2
 
 
 def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250):  #, phase_correction=None, bshunt=None):
@@ -134,7 +128,7 @@ def qfactor_dielectric(tand):
     return 1 / tand
 
 
-def qfactor_conduction(a, b, d, cond, m=1, n=0, l=1, er=1, ur=1):
+def qfactor_conduction(a, b, d, cond, m=1, n=0, l=1, er=1, ur=1, fres=None):
     """Calculate Q-factor due to waveguide conductivity.
 
     Args:
@@ -154,10 +148,11 @@ def qfactor_conduction(a, b, d, cond, m=1, n=0, l=1, er=1, ur=1):
     """
 
     # Resonant frequency
-    fres = resonant_frequency(a, b, d, m=m, n=n, l=l, er=er, ur=ur)
+    if fres is None:
+        fres = resonant_frequency(a, b, d, m=m, n=n, l=l, er=er, ur=ur)
 
     # Surface resistance
-    rs = surface_resistance(fres, cond, ur=ur)
+    rs = surface_resistance(fres, cond)
 
     # Wavenumber (1/m)
     k = wavenumber(fres, er=er, ur=ur)
@@ -166,11 +161,11 @@ def qfactor_conduction(a, b, d, cond, m=1, n=0, l=1, er=1, ur=1):
     eta = intrinsic_impedance(er=er, ur=ur)
 
     # Eqn 6.46 in Pozar
-    t1 = (k * a * d) ** 3 * b * eta / (2 * pi ** 2 * rs)
-    t2 = 2 * l ** 2 * a ** 3 * b + 2 * b * d ** 3 + l ** 2 * a ** 3 * d + a * d ** 3
-    # t2 = l ** 2 * a ** 3 * (2 * b + d) + d ** 3 * (2 * b + a)
-
-    return t1 / t2
+    t1 = (k * a * d) ** 3 * b * eta 
+    t2 = 2 * pi ** 2 * rs
+    t3 = (2 * l ** 2 * a ** 3 * b) + (2 * b * d ** 3) + (l ** 2 * a ** 3 * d) + (a * d ** 3)
+    
+    return t1 / t2 / t3
 
 
 def qfactor_parallel(q1, q2):
@@ -324,7 +319,7 @@ def find_resonances(f, s21db, amp_interp=6, fspan=5e7, debug=False, **kwargs):
     return f_resonances
 
 
-def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol=4, figsize=(15, 25), filename=None):
+def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol=4, figsize=(15, 25), filename=None, std=False):
     """Calculate Q-factor from experimental S21 magnitude.
 
     Args:
@@ -361,6 +356,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
     # Fit each individual peak
     f_center = np.empty_like(fres_list)
     qfac0 = np.empty_like(fres_list)
+    qfac0_std = np.empty_like(fres_list)
     qfacl = np.empty_like(fres_list)
     g = np.empty_like(fres_list)
     for i in range(len(fres_list)):
@@ -398,7 +394,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
 
         # Fit resonance model to data
         p0 = [peak_mag, fres_mid, q_3db, s21mag_t.min(), 0, 0]
-        popt, _ = curve_fit(_model, f_t, s21mag_t, p0=p0)
+        popt, pcov = curve_fit(_model, f_t, s21mag_t, p0=p0)
 
         # Unpack
         f0 = popt[1]
@@ -418,6 +414,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
         qfac0[i] = q0
         qfacl[i] = ql
         g[i] = g0
+        qfac0_std[i] = np.sqrt(np.diag(pcov))[2]
 
         # Plot fitting (debug only)
         if debug:  # pragma: no cover
@@ -444,4 +441,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
         plt.tight_layout()
         plt.show()
 
-    return f_center, qfac0, qfacl, g
+    if std:
+        return f_center, qfac0, qfac0_std
+    else:
+        return f_center, qfac0, qfacl, g
