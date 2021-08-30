@@ -381,8 +381,8 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
     return 2 * pi * f * ur * u0 / 2 / rs**2
 
 
-def conductivity_4k(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
-    """Calculate the effective conductivity at 4K in the regime of the 
+def conductivity_ase(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
+    """Calculate the effective conductivity in the regime of the 
     anomalous skin effect.
 
     Args:
@@ -398,4 +398,22 @@ def conductivity_4k(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
 
     return (beta ** 2 * e_density ** 2 * e ** 4 / 
         (pi * mu_r * u0 * m_e ** 2 * fermi_speed ** 2 * freq)) ** (1 / 3)
+
+
+def conductivity_4k(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
+    """Calculate the effective conductivity at 4K, assuming that you are in 
+    the regime of the anomalous skin effect.
+
+    Args:
+        freq (float): frequency in [Hz]
+        fermi_speed (float): Fermi speed in [m/s]
+        e_density (float): electron density [m-3]
+        mu_r (float): relative permeability
+
+    Returns:
+        float: effective conductivity, in units [S/m]
+
+    """
+
+    return conductivity_ase(freq, fermi_speed, e_density, beta, mu_r)
 
