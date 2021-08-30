@@ -1,11 +1,13 @@
 """Propagation in rectangular waveguides."""
 
 import numpy as np
+
 from numpy import pi, sqrt, arctan
 from scipy.constants import c as c0
 from scipy.constants import epsilon_0 as e0
 from scipy.constants import mu_0 as u0
-from scipy.constants import m_e, e
+from scipy.constants import m_e, e, mil
+
 
 # PROPAGATION CONSTANT (GAMMA = ALPHA + j * BETA) ------------------------- ###
 
@@ -15,12 +17,12 @@ def propagation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     Typically represented by: gamma
 
     Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        f: frequency, in units [Hz]
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
-        cond: conductivity of waveguide walls
+        cond: conductivity of waveguide walls, in units [S/m]
         m: mode number m
         n: mode number n
 
@@ -47,17 +49,17 @@ def attenuation_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     Typically represented by: alpha
 
     Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        f: frequency, in units [Hz]
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
-        cond: conductivity of waveguide walls
+        cond: conductivity of waveguide walls, in units [S/m]
         m: mode number m
         n: mode number n
 
     Returns:
-        np.ndarray: attenuation constant
+        np.ndarray: attenuation constant, in units [Np/m]
 
     """
 
@@ -70,17 +72,17 @@ def phase_constant(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     Typically represented by: beta
 
     Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        f: frequency, in units [Hz]
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
-        cond: conductivity of waveguide walls
+        cond: conductivity of waveguide walls, in units [S/m]
         m: mode number m
         n: mode number n
 
     Returns:
-        np.ndarray: phase constant
+        np.ndarray: phase constant, in units [rad/m]
 
     """
 
@@ -95,17 +97,17 @@ def wavelength(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0):
     Typically represented by: lambda
 
     Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        f: frequency, in units [Hz]
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
-        cond: conductivity of waveguide walls
+        cond: conductivity of waveguide walls, in units [S/m]
         m: mode number m
         n: mode number n
 
     Returns:
-        np.ndarray: wavelength
+        np.ndarray: wavelength, in units [m]
 
     """
 
@@ -124,7 +126,7 @@ def intrinsic_impedance(er=1, ur=1):
         ur: relative permeability
 
     Returns:
-        float: intrinsic impedance
+        float: intrinsic impedance, in units [ohms]
 
     """
 
@@ -137,12 +139,12 @@ def wavenumber(f, er=1, ur=1):
     Typically represented by: k
 
     Args:
-        f: frequency
+        f: frequency, in units [Hz]
         er: relative permittivity
         ur: relative permeability
 
     Returns:
-        np.ndarray: freespace wavenumber
+        np.ndarray: freespace wavenumber, in units [1/m]
 
     """
 
@@ -153,13 +155,13 @@ def cutoff_wavenumber(a, b=None, m=1, n=0):
     """Calculate cutoff wavenumber of TEmn or TMmn waveguide mode.
 
     Args:
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         m: mode number m
         n: mode number n
 
     Returns:
-        float: cutoff wavenumber
+        float: cutoff wavenumber, in units [1/m]
 
     """
 
@@ -174,15 +176,15 @@ def cutoff_frequency(a, b=None, er=1, ur=1, m=1, n=0):
     """Calculate cutoff frequency of TEmn or TMmn waveguide mode.
 
     Args:
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
         m: mode number m
         n: mode number n
 
     Returns:
-        float: cutoff frequency
+        float: cutoff frequency, in units [Hz]
 
     """
 
@@ -195,18 +197,18 @@ def impedance(f, a, b=None, er=1, ur=1, cond=None, m=1, n=0, mode='TE'):
     """Calculate characteristic impedance of TEmn or TMmn waveguide mode.
 
     Args:
-        f: frequency
-        a: broad waveguide dimension
-        b: narrow waveguide dimension
+        f: frequency, in units [Hz]
+        a: broad waveguide dimension, in units [m]
+        b: narrow waveguide dimension, in units [m]
         er: relative permittivity
         ur: relative permeability
-        cond: conductivity
+        cond: conductivity, in units [S/m]
         m: waveguide mode m
         n: waveguide mode n
         mode: mode, either "TE" or "TM"
 
     Returns:
-        np.ndarray: characteristic impedance
+        np.ndarray: characteristic impedance, in units [ohms]
 
     """
 
@@ -229,16 +231,16 @@ def dielectric_loss(f, a, b=None, er=1, ur=1, m=1, n=0):
     """Calculate dielectric loss.
 
     Args:
-        f: frequency
-        a: broad dimension of waveguide
-        b: narrow dimension of waveguide
+        f: frequency, in units [Hz]
+        a: broad dimension of waveguide, in units [m]
+        b: narrow dimension of waveguide, in units [m]
         er: relative permittivity
         ur: relative permeability
         m: mode number m
         n: mode number n
 
     Returns:
-        np.ndarray: dielectric loss in Np/m
+        np.ndarray: dielectric loss, in units [Np/m]
 
     """
 
@@ -251,15 +253,15 @@ def conductor_loss(f, cond, a, b, er=1, ur=1):
     Only for TE10 mode.
 
     Args:
-        f: frequency
-        cond: conductivity of waveguide walls (~5.8e7 for copper)
-        a: broad waveguide dimension
-        b: narrow waveguide dimension
+        f: frequency, in units [Hz]
+        cond: conductivity of waveguide walls (~5.8e7 for copper), in units [S/m]
+        a: broad waveguide dimension, in units [m]
+        b: narrow waveguide dimension, in units [m]
         er: relative permittivity
         ur: relative permeability
 
     Returns:
-        np.ndarray: conductor loss in Np/m
+        np.ndarray: conductor loss, in units [Np/m]
 
     """
 
@@ -277,6 +279,15 @@ def conductor_loss(f, cond, a, b, er=1, ur=1):
     # Conductor loss (Eqn. 3.96 in Pozar)
     return rs / (a**3 * b * beta * k * eta) * (2 * b * pi**2 + a**3 * k**2)
 
+    # # Conductor loss (Maxwell 1947)
+    # lambda_c = 2 * a
+    # lambda_0 = 2 * np.pi / k
+    # term1 = 1 / 2 / b
+    # term2 = np.sqrt(1 - (lambda_0 / lambda_c) ** 2)
+    # term3 = np.sqrt(4 * np.pi / (lambda_0 * u0 * c0 * cond))
+    # term4 = 1 + 2 * b / a * (lambda_0 / lambda_c) ** 2
+    # return term1 / term2 * term3 * term4
+
 
 # CONDUCTIVITY / SURFACE RESISTANCE --------------------------------------- ###
 
@@ -284,12 +295,12 @@ def surface_resistance(f, cond, ur=1):
     """Calculate surface resistance.
 
     Args:
-        f: frequency
-        cond: conductivity
+        f: frequency, in units [Hz]
+        cond: conductivity, in units [S/m]
         ur: relative permeability
 
     Returns:
-        np.ndarray: surface resistance
+        np.ndarray: surface resistance, in units [ohms/sq]
 
     """
 
@@ -300,12 +311,12 @@ def skin_depth(f, cond, ur=1):
     """Calculate skin depth.
 
     Args:
-        f: frequency
-        cond: conductivity
+        f: frequency, in units [Hz]
+        cond: conductivity, in units [S/m]
         ur: relative permeability
 
     Returns:
-        np.ndarray: skin depth
+        np.ndarray: skin depth, in units [m]
 
     """
 
@@ -318,14 +329,14 @@ def conductivity_rough(f, cond, roughness, ur=1, model='groiss'):
     Using the Hammerstad-Bekkadal ('HB') or Groiss ('Groiss') model.
 
     Args:
-        f: frequency
-        cond: conductivity
-        roughness: rms surface roughness
+        f: frequency, in units [Hz]
+        cond: conductivity, in units [S/m]
+        roughness: rms surface roughness, in units [m]
         ur: relative permeability
         model: roughness model, 'Groiss' or 'HB'
 
     Returns:
-        np.ndarray: effective conductivity
+        np.ndarray: effective conductivity, in units [S/m]
 
     """
 
@@ -354,7 +365,7 @@ def effective_conductivity(f, alpha_c, a, b, er=1, ur=1):
         ur: relative permeability
 
     Returns:
-        effective conductivity
+        effective conductivity, in units [S/m]
 
     """
 
@@ -381,7 +392,7 @@ def conductivity_4k(freq, fermi_speed, e_density, beta=1.5, mu_r=1):
         mu_r (float): relative permeability
 
     Returns:
-        float: effective conductivity
+        float: effective conductivity, in units [S/m]
 
     """
 
