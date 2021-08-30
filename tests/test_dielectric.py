@@ -4,6 +4,8 @@ import numpy as np
 import scipy.constants as sc
 import skrf as rf
 
+from numpy import sqrt, pi
+
 import waveguide as wg
 
 
@@ -47,3 +49,49 @@ def test_against_scikit_rf():
 
     # Compare
     np.testing.assert_almost_equal(network.s_db[:,1,0], 20*np.log10(np.abs(s21)), decimal=2)
+
+
+def test_dielectric_loss_against_simple_equation(debug=False):
+
+    # Waveguide dimensions
+    a = 65 * sc.mil
+    b = a / 2
+
+    # HDPE
+    er_mag = 2.4
+    tand = 1e-4
+    er = er_mag * (1 - 1j * tand)
+
+    # Frequency sweep
+    f = np.linspace(110, 170, 100) * 1e9 
+    fghz = f / 1e9
+
+    # Dielectric loss from Pozar
+    def _alpha_d_test(f, er, tand):
+        w = 2 * pi * f
+        k = w * sqrt(sc.mu_0 * sc.epsilon_0 * er)
+        kc = pi / a
+        beta = sqrt(k ** 2 - kc ** 2)
+        return k ** 2 * tand / 2 / beta
+
+    # Dielectric loss
+    alpha_d1 = wg.dielectric_loss(f, a, b, er=er, ur=1, m=1, n=0)
+    alpha_d2 = _alpha_d_test(f, er_mag, tand)
+
+    if debug:
+        import matplotlib.pyplot as plt 
+        plt.figure()
+        plt.plot(fghz, alpha_d1, 'k', label="Waveguide package")
+        plt.plot(fghz, alpha_d2, 'r--', label="Equation from Pozar")
+        plt.xlabel("Frequency (GHz)")
+        plt.ylabel("Dielectric Loss (Np/m)")
+        plt.legend()
+        plt.show()
+
+    np.testing.assert_almost_equal(alpha_d1, alpha_d2)
+
+
+if __name__ == "__main__":
+
+    test_dielectric_loss_against_simple_equation(debug=True)
+
