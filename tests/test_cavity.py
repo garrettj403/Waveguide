@@ -189,6 +189,9 @@ def test_simple_cavity():
 
 
 def test_simulated_cavity(debug=False):
+    """Use simulated data from HFSS. Calculate Q-factor and conductivity."""
+
+    # TODO: add phase correction for irises
 
     # Dimensions
     a, b, d = 280*sc.mil, 140*sc.mil, 6*sc.inch
@@ -279,64 +282,53 @@ def test_lossy_cavity():
     assert qc == approx(14365, abs=5)
 
 
-# def test_simulated_cavity_with_hdpe(debug=False):
-#
-#     # Dimensions
-#     a, b, d = 280*sc.mil, 140*sc.mil, 6*sc.inch
-#     cond = 1e7
-#     er
-#
-#     # Load simulated data
-#     filename = os.path.join('data', 'cavity.s2p')
-#     dir_name = os.path.dirname(__file__)
-#     filename = os.path.join(dir_name, filename)
-#     data = rf.Network(filename)
-#
-#     # Unpack
-#     f = data.f
-#     s21 = data.s[:, 1, 0]
-#
-#     # Find resonances
-#     fres_list = wg.find_resonances(f, wg.db20(s21), height=-90)
-#
-#     # Get Q-factor
-#     fres, q0, ql, _ = wg.find_qfactor(f, np.abs(s21), fres_list, fspan=5e7, ncol=6, figsize=(14,8), debug=debug)
-#
-#     # Resonant frequencies (theory)
-#     ell = np.arange(3, 3 + len(fres))
-#     fres_theory = wg.resonant_frequency(a, b, d, l=ell)
-#     np.testing.assert_almost_equal(fres / 1e9, fres_theory / 1e9, decimal=1)
-#
-#     # Q-factor (theory)
-#     qc_theory = wg.qfactor_conduction(a, b, d, cond, l=ell)
-#
-#     # Plot Q-factor
-#     if debug:
-#         plt.figure()
-#         plt.plot(ell, q0, 'bo--', label="Q-factor (corrected)")
-#         plt.plot(ell, ql, 'ro--', label="Q-factor (loaded)")
-#         plt.plot(ell, qc_theory, 'ko--', label='Theory')
-#         plt.xlim(xmin=0)
-#         plt.legend()
-#         plt.show()
-#
-#     # Get conductivity from Q-factor
-#     cond_q = wg.q2conductivity(fres, q0, a, b, d, l=ell)
-#     cond_theory = wg.q2conductivity(fres_theory, qc_theory, a, b, d, l=ell)
-#
-#     # Plot conductivity
-#     if debug:
-#         plt.figure()
-#         plt.plot(fres, cond_q, 'bo-', label="From Q-factor")
-#         plt.plot(fres_theory, cond_theory, 'ro--', label="From theory")
-#         plt.axhline(cond, c='k', ls='--')
-#         plt.ylabel("Conductivity (S/m)")
-#         plt.xlabel("Frequency (GHz)")
-#         plt.show()
-#
-#     # Test
-#     np.testing.assert_allclose(cond_q, cond*np.ones_like(cond_q), atol=1e6)
-#     np.testing.assert_allclose(cond_theory, cond * np.ones_like(cond_q), atol=1)
+def test_phase_correction():
+
+    # Cavity dimensions
+    a, b, d = 224*sc.mil, 112*sc.mil, 4*sc.inch
+
+    # Relative permittivity
+    er = 2.37
+
+    # Resonance order
+    l = np.arange(10, 21)
+
+    # Phase correction due to iris reflection
+    phase_correction = 0.05 * np.ones_like(l)
+
+    # Resonant frequencies of the cavity
+    f_res = wg.resonant_frequency(a, b, d, m=1, n=0, l=l, er=er, phase_correction=phase_correction)
+    
+    # Recover resonance order
+    l_recovered = wg.guess_resonance_order(f_res, a, b, d, er=er)
+    np.testing.assert_allclose(l_recovered, l)
+
+    # Recover permittivity
+    er_recovered = wg.resonant_frequency2permittivity(l_recovered, f_res, a, b, d, phase_correction=phase_correction)
+    np.testing.assert_allclose(er_recovered, er, atol=0.001)
+
+
+def test_q_factor_conductor_low():
+
+    # Cavity dimensions
+    a, b, d = 224*sc.mil, 112*sc.mil, 4*sc.inch
+
+    # Relative permittivity
+    er = 2.37
+
+    # Resonance order
+    l = np.arange(10, 21)
+
+    # Resonant frequencies of the cavity
+    f_res = wg.resonant_frequency(a, b, d, m=1, n=0, l=l, er=er)
+
+    # Q-factor due to conduction loss
+    cond = 4.1e7
+    qfac = wg.qfactor_conduction(a, b, d, cond, l=l, er=er)
+
+    # Recover conductivity
+    cond_recovered = wg.q2conductivity(f_res, qfac, a, b, d, l=l, er=er)
+    np.testing.assert_allclose(cond_recovered, cond, atol=0.001e7)
 
 
 if __name__ == "__main__":
@@ -345,5 +337,7 @@ if __name__ == "__main__":
     # test_example_6p3()
     # test_problem_6p9()
     # test_problem_6p23()
-    test_simulated_cavity(debug=True)
+    # test_simulated_cavity(debug=True)
     # test_lossy_cavity()
+    # test_phase_correction()
+    test_q_factor_conductor_low()
