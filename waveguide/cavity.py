@@ -16,7 +16,7 @@ from .propagation import surface_resistance, wavenumber, intrinsic_impedance
 eta0 = sc.physical_constants['characteristic impedance of vacuum'][0]
 
 
-def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None):
+def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, iris_phase=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -28,7 +28,7 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None
         l: resonance number l
         er: relative permittivity
         ur: relative permeability
-        phase_correction: phase correction for cavity termination
+        iris_phase: phase correction for cavity termination
         bshunt: normalized shunt susceptance of iris
 
     Returns:
@@ -37,18 +37,19 @@ def resonant_frequency(a, b, d, m=1, n=0, l=0, er=1, ur=1, phase_correction=None
     """
 
     # Correct for susceptance of iris
-    if phase_correction is not None:
-        corr = 2 * phase_correction
+    if iris_phase is None:
+        phi = 0
     else:
-        corr = 0
+        phi = 2 * iris_phase
+    phi = np.angle(np.exp(1j * phi))
 
-    term1 = c0 / 2 / pi / sqrt(er.real * ur.real)
-    term2 = sqrt((m * pi / a)**2 + (n * pi / b)**2 + ((l * pi - corr) / d)**2)
+    term1 = c0 / 2 / sqrt(er.real * ur.real)
+    term2 = sqrt((m / a)**2 + (n / b)**2 + ((l - phi / np.pi) / d)**2)
 
     return term1 * term2
 
 
-def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, phase_correction=None):
+def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, iris_phase=None):
     """Calculate the resonant frequencies of a waveguide cavity.
 
     Args:
@@ -59,7 +60,7 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, phase_corr
         d: length of waveguide cavity
         m: mode number m
         n: mode number n
-        reflection_phase: phase correction for cavity termination
+        iris_phase: phase correction for cavity termination
         bshunt: normalized shunt susceptance of iris
 
     Returns:
@@ -68,18 +69,18 @@ def resonant_frequency2permittivity(l_order, fres, a, b, d, m=1, n=0, phase_corr
     """
 
     # Correct for susceptance of iris
-    if phase_correction is not None:
-        corr = 2 * phase_correction
+    if iris_phase is not None:
+        phi = 2 * iris_phase
     else:
-        corr = 0
+        phi = 0
 
     term1 = c0 / 2 / pi
-    term2 = sqrt((m * pi / a)**2 + (n * pi / b)**2 + ((l_order * pi - corr) / d)**2)
+    term2 = sqrt((m * pi / a)**2 + (n * pi / b)**2 + ((l_order * pi - phi) / d)**2)
 
     return (term1 * term2 / fres) ** 2
 
 
-def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250):  #, phase_correction=None, bshunt=None):
+def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250, iris_phase=None):
     """Guess resonance order, ell, from measured data.
 
     Args:
@@ -92,6 +93,7 @@ def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250): 
         er: relative permittivity
         ur: relative permeability
         lstart_max: maximum starting resonance order to test
+        iris_phase: 
 
     """
 
@@ -100,7 +102,7 @@ def guess_resonance_order(fres, a, b, d, m=1, n=0, er=1, ur=1, lstart_max=250): 
 
     # Resonant frequency from theory
     ell_theory = np.arange(int(lstart_max) + npts + 1)
-    fres_theory = resonant_frequency(a, b, d, m=m, n=n, l=ell_theory, er=er, ur=ur)
+    fres_theory = resonant_frequency(a, b, d, m=m, n=n, l=ell_theory, er=er, ur=ur, iris_phase=iris_phase)
 
     # Find minimum error to estimate the resonance order
     error = np.empty(lstart_max)
@@ -400,11 +402,7 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
         f0 = popt[1]
         ql = abs(popt[2])
 
-        # Get unloaded
-        # def _model_opt(x):
-        #     return -_model(x, *popt)
-        # f0 = fminbound(_model_opt, f0-fspan/2, f0+fspan/2)
-        # s21mag0 = -_model_opt(f0)
+        # Get unloaded Q-factor
         s21mag0 = _model(f0, *popt)
         g0 = s21mag0 / (1 - s21mag0)
         q0 = (1 + g0) * ql
@@ -429,10 +427,10 @@ def find_qfactor(f, s21mag, fres_list, fspan=1e8, q_init=None, debug=False, ncol
             ax[row][col].plot(f_model, s21_model, 'r')
 
             # Print info
-            f_str = "f: {:.1f} GHz".format(f0/1e9)
-            q_str = "Q: {:.0f}".format(ql)
-            ax[row][col].text(0.05, 0.85, f_str, transform=ax[row][col].transAxes, fontsize=16, ha='left')
-            ax[row][col].text(0.95, 0.85, q_str, transform=ax[row][col].transAxes, fontsize=16, ha='right')
+            f_str = f"f: {f0/1e9:.1f} GHz"
+            q_str = f"QL: {ql:.0f}\nQ0: {q0:.0f}\ng: {g0:.3f}"
+            ax[row][col].text(0.05, 0.9, f_str, transform=ax[row][col].transAxes, fontsize=16, ha='left', va='top')
+            ax[row][col].text(0.95, 0.9, q_str, transform=ax[row][col].transAxes, fontsize=16, ha='right', va='top')
 
     # Save figure
     if debug and filename is not None:  # pragma: no cover
