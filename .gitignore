@@ -11,3 +11,5 @@ waveguide.egg-info/
 old/
 
 new-version.md
+
+examples/cryogenic-waveguide-attenuation.ipynb
